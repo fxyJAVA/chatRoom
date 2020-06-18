@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ChannelManager {
 
     /**
-     * 存放所有Channel相关的引用
+     * 存放所有Channel相关的引用 TODO fxy 分布式下该如何存储?
      */
     public static ConcurrentHashMap<Channel, ChannelSession> sessionMap = new ConcurrentHashMap<>();
 

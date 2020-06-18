@@ -63,7 +63,7 @@ public class NetServerOptions {
 
     public static class Builder {
 
-        NetServerOptions serverOptions = new NetServerOptions();
+        NetServerOptions serverOptions ;
 
         public Builder(int listenPort) {
             serverOptions = new NetServerOptions();

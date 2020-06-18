@@ -23,6 +23,9 @@ public class ApiInjectProcessor extends InstantiationAwareBeanPostProcessorAdapt
 
     @Override
     public boolean postProcessAfterInstantiation(Object bean, String beanName) throws BeansException {
+        //TODO fxy 实际将所有spring管理的bean都处理了一遍
+        //TODO fxy 思考InstantiationAwareBeanPostProcessorAdapter的作用
+        //        System.out.println(bean.toString());
         ReflectionUtils.doWithLocalMethods(bean.getClass(), method -> {
             Api annotation = method.getAnnotation(Api.class);
             if (annotation == null) {

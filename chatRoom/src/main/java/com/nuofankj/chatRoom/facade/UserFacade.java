@@ -32,6 +32,9 @@ public class UserFacade {
         userService.login(session, applyLoginMessage.getNickName());
     }
 
+
+    //TODO fxy 该注解作用,监听Application发出的事件，如果是自己监听的事件则执行
+    //TODO fxy 思考如果监听同一事件的方法不止一种会如何?
     @EventListener
     public void afterLogout(LogoutEvent event) {
         PacketSendUtil.broadcastMessage(new SysUserCountMessage(ChannelManager.getActiveUserCount(), event.getUserNickName(), ChatRoomConstant.LOGOUT_ACTION));

@@ -32,6 +32,7 @@ import java.net.InetSocketAddress;
 @Component
 public class WebSocketServer implements SmartInitializingSingleton {
 
+    //TODO fxy 可以用来发布事件（Event类应当继承ApplicationEvent），搭配注解@EventListener使用
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
 
@@ -65,19 +66,32 @@ public class WebSocketServer implements SmartInitializingSingleton {
         serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(this.bossGroup, this.workerGroup);
         serverBootstrap.channel(serverChannel);
+
+        //TODO 啥意思
         serverBootstrap.option(ChannelOption.SO_BACKLOG, serverOptions.getBackLog());
+        //TODO 啥意思
         serverBootstrap.option(ChannelOption.WRITE_BUFFER_WATER_MARK, new WriteBufferWaterMark(serverOptions.getWaterMarkLow(), serverOptions.getWaterMarkHigh()));
+
+
         serverBootstrap.childOption(ChannelOption.SO_KEEPALIVE, serverOptions.isKeepALive());
         // 某个服务器进程占用了TCP的80端口进行监听，此时再次监听该端口就会返回错误，使用该参数就可以解决问题，该参数允许共用该端口，这个在服务器程序中比较常使
         serverBootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
+
         // Socket参数，关闭Socket的延迟时间，默认值为-1，表示禁用该功能。-1表示socket.close()方法立即返回，但OS底层会将发送缓冲区全部发送到对端。0表示socket.close()方法立即返回，OS放弃发送缓冲区的数据直接向对端发送RST包，对端收到复位错误。非0整数值表示调用socket.close()方法的线程被阻塞直到延迟时间到或发送缓冲区中的数据发送完毕，若超时，则对端会收到复位错误。
         serverBootstrap.childOption(ChannelOption.SO_LINGER, 0);
+
         // Netty参数，用于Channel分配接受Buffer的分配器，默认值为AdaptiveRecvByteBufAllocator.DEFAULT，是一个自适应的接受缓冲区分配器，能根据接受到的数据自动调节大小。可选值为FixedRecvByteBufAllocator，固定大小的接受缓冲区分配器。
         serverBootstrap.childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+
+
         serverBootstrap.childOption(ChannelOption.TCP_NODELAY, serverOptions.isTcpNoDelay());
+
         serverBootstrap.childOption(ChannelOption.CONNECT_TIMEOUT_MILLIS, serverOptions.getConnectTimeout());
+
         serverBootstrap.childOption(ChannelOption.SO_RCVBUF, serverOptions.getReceiveBufferSize());
+
         serverBootstrap.childOption(ChannelOption.SO_SNDBUF, serverOptions.getSendBufferSize());
+
         serverBootstrap.childHandler(createNetServerChannelInitializer(serverOptions.getWebSocketPath()));
 
         listen();
@@ -93,9 +107,12 @@ public class WebSocketServer implements SmartInitializingSingleton {
                 pipeline.addLast(new HttpObjectAggregator(64 * 1024));
                 // 设计思路是，服务器在一定时间内发现连接读空闲，则再移除对应的channel，当然了客户端也要定时推送pong数据过来
                 pipeline.addLast(new IdleStateHandler(60, 0, 0));
+
                 pipeline.addLast(new AuthHandler(applicationEventPublisher));
+
                 // WebSocketServerProtocolHandler 处理了所有委托管理的 WebSocket 帧类型以 及升级握手本身。如果握手成功，那么所需的ChannelHandler将会被添加到ChannelPipeline 中，而那些不再需要的ChannelHandler则将会被移除
                 pipeline.addLast(new WebSocketServerProtocolHandler(webSocketPath));
+
                 pipeline.addLast(new MessageHandler(applicationEventPublisher));
             }
         };
@@ -130,7 +147,6 @@ public class WebSocketServer implements SmartInitializingSingleton {
     }
 
     private boolean isLinux() {
-
         String osName = System.getProperty("os.name");
         return osName != null && osName.toLowerCase().contains("linux");
     }
